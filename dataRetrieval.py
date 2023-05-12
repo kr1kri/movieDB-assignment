@@ -1,7 +1,7 @@
 import os
 import requests
 
-api_key = os.getenv('API_KEY')
+api_key = os.getenv('API_KEY') #export API_KEY=<API_KEY>
 params = {"api_key": api_key, "region": "GR"}
 base_url = "https://api.themoviedb.org/3/"
 
