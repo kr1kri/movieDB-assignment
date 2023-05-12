@@ -7,8 +7,8 @@ db_pwd = os.getenv('POSTGRES_PWD')
 
 conn = psycopg2.connect(
     database="greekmovies",
-    user=db_user,
-    password=db_pwd,
+    user=db_user, # export POSTGRES_UNAME=<POSTGRES-USERNAME>
+    password=db_pwd, # export POSTGRES_PWD=<POSTGRES-PASSWORD>
     host="localhost",
     port="5432"
 )
