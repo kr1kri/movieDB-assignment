@@ -1,63 +1,37 @@
+import os
 import psycopg2
-from dataRetrieval import now_playing, gr_movies, crew_data, directors
+from dataRetrieval import now_playing, crew_data, directors
+
+db_user = os.getenv('POSTGRES_UNAME')
+db_pwd = os.getenv('POSTGRES_PWD')
 
 conn = psycopg2.connect(
     database="greekmovies",
-    user="postgres",
-    password="postgres",
+    user=db_user,
+    password=db_pwd,
     host="localhost",
     port="5432"
 )
 cur = conn.cursor()
+conn.autocommit = True
 
-for movie in now_playing:
-    movie_id = movie['id']
-    title = movie['title']
-    description = movie['overview']
-    original_title = movie['original_title']
+movies_data = [(movie['id'], movie['title'], movie['overview'], movie['original_title'], 'GR') for movie in now_playing]
+movies_query = "INSERT INTO movies (id, title, description, original_title, country_playing) VALUES (%s, %s, %s, %s, %s) " \
+               "ON CONFLICT (id) DO UPDATE SET (title, description, original_title, country_playing) = " \
+               "(EXCLUDED.title, EXCLUDED.description, EXCLUDED.original_title, EXCLUDED.country_playing)"
+cur.executemany(movies_query, movies_data)
 
-    cur.execute(
-        "INSERT INTO gr_movies (id, title, description, original_title) VALUES (%s, %s, %s, %s)",
-        (movie_id, title, description, original_title)
-    )
+person_data = [(person['id'], person['credit_id'], person['department'], person['job'], person['name'], person['original_name']) for person in crew_data]
+crew_query = "INSERT INTO crew (crew_id, credit_id, department, job, name, original_name) VALUES (%s, %s, %s, %s, %s, %s) " \
+             "ON CONFLICT (crew_id) DO UPDATE SET (credit_id, department, job, name, original_name) = " \
+             "(EXCLUDED.credit_id, EXCLUDED.department, EXCLUDED.job, EXCLUDED.name, EXCLUDED.original_name)"
+cur.executemany(crew_query, person_data)
 
-for movie in gr_movies:
-    movie_id = movie['id']
-    title = movie['title']
-    description = movie['overview']
-    original_title = movie['original_title']
-    release_date = movie['release_date']
-    imdb_id = movie['imdb_id']
-
-    cur.execute(
-        "INSERT INTO movies (id, title, description, original_title, release_date, imdb_id) VALUES (%s, %s, %s, %s, %s, %s)",
-        (movie_id, title, description, original_title, release_date, imdb_id)
-    )
-
-for person in crew_data:
-    crew_id = person['id']
-    credit_id = person['credit_id']
-    department = person['department']
-    job = person['job']
-    name = person['name']
-    original_name = person['original_name']
-
-    cur.execute(
-        "INSERT INTO crew (crew_id, credit_id, department, job, name, original_name) VALUES (%s, %s, %s, %s, %s, %s)",
-        (crew_id, credit_id, department, job, name, original_name)
-    )
-
-for director in directors:
-    director_id = director['id']
-    credit_id = director['credit_id']
-    imdb_link = director['imdb_link']
-    name = director['name']
-    original_name = director['original_name']
-
-    cur.execute(
-        "INSERT INTO directors (director_id, credit_id, imdb_link, name, original_name) VALUES (%s, %s, %s, %s, %s)",
-        (director_id, credit_id, imdb_link, name, original_name)
-    )
+directors_data = [(director['id'], director['credit_id'], director['imdb_link'], director['name'], director['original_name']) for director in directors]
+directors_query = "INSERT INTO directors (director_id, credit_id, imdb_link, name, original_name) VALUES (%s, %s, %s, %s, %s) " \
+                  "ON CONFLICT (director_id) DO UPDATE SET (credit_id, imdb_link, name, original_name) = " \
+                  "(EXCLUDED.credit_id, EXCLUDED.imdb_link, EXCLUDED.name, EXCLUDED.original_name)"
+cur.executemany(directors_query, directors_data)
 
 conn.commit()
 conn.close()
