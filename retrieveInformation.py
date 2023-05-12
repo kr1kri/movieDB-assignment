@@ -29,10 +29,7 @@ else:
     print("Please specify the data you want to retrieve using --movies or --directors arguments")
     exit(1)
 
-columns = [desc[0] for desc in cur.description]
-
-print("|".join(columns))
-for row in data:
-    print("|".join(str(val) for val in row))
+print("|".join([desc[0] for desc in cur.description]))
+print(["|".join(str(val) for val in row)] for row in data)
 
 conn.close()
