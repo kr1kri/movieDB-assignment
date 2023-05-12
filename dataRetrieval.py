@@ -31,9 +31,3 @@ for director in directors:
     person_response = requests.get(person_endpoint, params=params)
     imdb_id = person_response.json()['imdb_id']
     director['imdb_link'] = f"https://www.imdb.com/name/{imdb_id}"
-
-# pprint(now_playing[0])
-# pprint(gr_movies[0])
-# pprint(crew_data[0])
-# pprint(directors[0])
-
